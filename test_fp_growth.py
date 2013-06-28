@@ -30,6 +30,7 @@ class FPTreeTestCase(unittest.TestCase):
         first_transaction = ['a', 'b', 'c']
         second_transaction = ['a', 'b', 'd']
 
+        ITEM, CHILDREN, COUNT = range(3)
         expected_result = [
             # item, children, count
             ('a', ('b', ), 2),
@@ -42,10 +43,9 @@ class FPTreeTestCase(unittest.TestCase):
         self.tree.insert_transaction(second_transaction)
 
         count = 0
-        ITEM, CHILDREN, COUNT = range(3)
 
         for node in self.tree:
-            if node._root:
+            if node.root:
                 continue
 
             self.assertEqual(node.item, expected_result[count][ITEM])
@@ -53,6 +53,29 @@ class FPTreeTestCase(unittest.TestCase):
                 tuple(node.children.keys()), expected_result[count][CHILDREN])
             self.assertEqual(node.count, expected_result[count][COUNT])
             count += 1
+
+    def test_header_pointers(self):
+        '''
+        test if the header pointers are getting created properly
+        '''
+        transaction = ['a', 'b', 'c', 'd']
+        self.tree.insert_transaction(transaction)
+        nodes = [node for node in self.tree]
+        for key, value in self.tree._headers.iteritems():
+            self.assertIn(key, transaction)
+            self.assertIn(value, nodes)
+
+    def test_linked_list_pointers(self):
+        ''' test if the linked list pointers are getting properly
+        initialized or not '''
+        transaction_1 = ['a', 'b']
+        transaction_2 = ['b', 'a']
+        self.tree.insert_transaction(transaction_1)
+        self.tree.insert_transaction(transaction_2)
+
+        # make sure the `next` of the first item points to the last element.
+        self.assertEqual(self.tree._headers['a'].neighbor, self.tree._latest_ptr['a'])
+        self.assertEqual(self.tree._headers['b'].neighbor, self.tree._latest_ptr['b'])
 
 
 class FPTreeNodeTestCase(unittest.TestCase):
