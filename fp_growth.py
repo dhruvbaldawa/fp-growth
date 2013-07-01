@@ -53,9 +53,21 @@ class FPTree(object):
         ''' return the prefix paths containing a particular item '''
         link_node = self._headers[item]
         paths = []
-        while link_node.neighbor is not None:
-            path = [link_node]
-            path_node = path.parent
+        while link_node:
+            path = []
+            path_node = link_node.parent
+            while not path_node.root:
+                path.append(path_node)
+                path_node = path_node.parent
+            paths.append(path)
+            link_node = link_node.neighbor
+        return paths
+
+    @property
+    def headers(self):
+        ''' iterator which returns the header nodes in reverse manner '''
+        for node in reversed(self._headers.values()):
+            yield node
 
     def __iter__(self):
         '''
@@ -122,7 +134,27 @@ class FPTreeNode(object):
         return "(%s: %s)" % (self.item, self.count)
 
 
-def find_frequent_itemsets(transactions):
+def fp_growth(tree, suffix):
+    ''' implementation of the recursive FP Growth algorithm '''
+    for node in tree.headers:
+        # beta = node UNION suffix
+        # find_all_patterns(beta, support=node.support)
+        # pattern_beta = conditional_base_patterns(beta)
+        # tree_beta = conditional_fp_tree(pattern_beta)
+
+        # if not tree_beta.is_empty():
+        #     fp_growth(tree_beta, beta)
+        pass
+
+
+def find_frequent_itemsets(tree, headers, support, include_support):
+    ''' find the frequent itemsets, given FP Tree, header table
+    and a support.
+
+    :param `FPTree` tree:
+    :param `collections.OrderedDict` headers:
+    :param int support:
+    '''
     pass
 
 
@@ -145,9 +177,9 @@ def build_fp_tree(transactions, min_support):
     # function for filtering the items in the transaction
     filter_fn = lambda item: item in item_frequencies
     # sort all the transactions
-    # @TODO: make an iterable later
-    sorted_transactions = [sorted(filter(filter_fn, transaction), key=sort_fn)
-        for transaction in transactions]
+    # @TODO: make sorted and filter iterators later
+    sorted_transactions = (sorted(filter(filter_fn, transaction), key=sort_fn)
+        for transaction in transactions)
 
     # build the tree
     tree = FPTree()

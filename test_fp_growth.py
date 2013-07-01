@@ -54,6 +54,15 @@ class FPTreeTestCase(unittest.TestCase):
             self.assertEqual(node.count, expected_result[count][COUNT])
             count += 1
 
+    def test_prefix_path(self):
+        ''' test if the prefix paths are getting properly generated or not. '''
+        self.tree.insert_transaction(['a', 'b', 'c'])
+        self.tree.insert_transaction(['a', 'd', 'c'])
+
+        prefix_paths = self.tree.prefix_path('c')
+        paths = [[node.item for node in path] for path in prefix_paths]
+        self.assertEquals(paths, [['b', 'a'], ['d', 'a']])
+
     def test_header_pointers(self):
         '''
         test if the header pointers are getting created properly
@@ -64,6 +73,13 @@ class FPTreeTestCase(unittest.TestCase):
         for key, value in self.tree._headers.iteritems():
             self.assertIn(key, transaction)
             self.assertIn(value, nodes)
+
+    def test_headers(self):
+        ''' test if the headers iterator is working properly or not. '''
+        transaction = ['a', 'b', 'c']
+        self.tree.insert_transaction(transaction)
+        headers = [header.item for header in self.tree.headers]
+        self.assertEqual(headers, ['c', 'b', 'a'])
 
     def test_linked_list_pointers(self):
         ''' test if the linked list pointers are getting properly
